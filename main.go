@@ -20,11 +20,11 @@ func main() {
 }
 
 func signup(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("signup invoked")
+	w.Write([]byte("Successfully called signup"))
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("login invoked")
+	w.Write([]byte("Successfully called login"))
 }
 
 func protectedEndpoint(w http.ResponseWriter, r *http.Request) {
