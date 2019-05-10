@@ -40,7 +40,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(db)
+	err = db.Ping()
 
 	router.HandleFunc("/signup", signup).Methods("POST")
 	router.HandleFunc("/login", login).Methods("POST")
