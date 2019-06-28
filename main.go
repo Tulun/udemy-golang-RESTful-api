@@ -10,6 +10,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/gorilla/mux"
 	"github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -77,6 +78,14 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("pass text", user.Password)
+	fmt.Println("hash", hash)
 	spew.Dump(user)
 }
 
