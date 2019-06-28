@@ -112,8 +112,8 @@ func signup(w http.ResponseWriter, r *http.Request) {
 }
 
 func GenerateToken(user User) (string, error) {
-	// var err error
-	// secret := "secret"
+	var err error
+	secret := "secret"
 
 	// a JWT
 	// 3 parts: header, payload, secret
@@ -125,7 +125,13 @@ func GenerateToken(user User) (string, error) {
 
 	spew.Dump(token)
 
-	return "", nil
+	tokenString, err := token.SignedString([]byte(secret))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return tokenString, nil
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
@@ -134,8 +140,14 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	json.NewDecoder(r.Body).Decode(&user)
 
-	GenerateToken(user)
-	w.Write([]byte("Successfully called login"))
+	token, err := GenerateToken(user)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(token)
+	// w.Write([]byte("Successfully called login"))
 }
 
 func protectedEndpoint(w http.ResponseWriter, r *http.Request) {
