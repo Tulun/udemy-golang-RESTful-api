@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/gorilla/mux"
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -61,6 +60,10 @@ func respondWithError(w http.ResponseWriter, status int, error Error) {
 	return
 }
 
+func responseJSON(w http.ResponseWriter, data interface{}) {
+	json.NewEncoder(w).Encode(data)
+}
+
 func signup(w http.ResponseWriter, r *http.Request) {
 	var user User
 	var error Error
@@ -84,9 +87,25 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	fmt.Println("pass text", user.Password)
-	fmt.Println("hash", hash)
-	spew.Dump(user)
+	user.Password = string(hash)
+
+	stmt := "insert into users (email, password) values($1, $2) RETURNING id;"
+
+	err = db.QueryRow(stmt, user.Email, user.Password).Scan(&user.ID)
+
+	if err != nil {
+		error.Message = "Server error."
+		respondWithError(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	user.Password = ""
+
+	w.Header().Set("Content-Type", "application/json")
+
+	responseJSON(w, user)
+
+	// spew.Dump(user)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
