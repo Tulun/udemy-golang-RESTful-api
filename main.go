@@ -7,6 +7,9 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/davecgh/go-spew/spew"
+
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -108,7 +111,30 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	// spew.Dump(user)
 }
 
+func GenerateToken(user User) (string, error) {
+	// var err error
+	// secret := "secret"
+
+	// a JWT
+	// 3 parts: header, payload, secret
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email": user.Email,
+		"iss":   "course",
+	})
+
+	spew.Dump(token)
+
+	return "", nil
+}
+
 func login(w http.ResponseWriter, r *http.Request) {
+
+	var user User
+
+	json.NewDecoder(r.Body).Decode(&user)
+
+	GenerateToken(user)
 	w.Write([]byte("Successfully called login"))
 }
 
