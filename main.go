@@ -137,7 +137,7 @@ func GenerateToken(user User) (string, error) {
 func login(w http.ResponseWriter, r *http.Request) {
 
 	var user User
-	// var jwt JWT
+	var jwt JWT
 	var error Error
 
 	json.NewDecoder(r.Body).Decode(&user)
@@ -154,7 +154,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// password := user.Password
+	password := user.Password
 
 	row := db.QueryRow("select * from users where email=$1", user.Email)
 	err := row.Scan(&user.ID, &user.Email, &user.Password)
@@ -169,16 +169,28 @@ func login(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	hashedPassword := user.Password
+
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+
+	if err != nil {
+		error.Message = "Invalid Password!"
+		respondWithError(w, http.StatusBadRequest, error)
+		return
+	}
+
 	spew.Dump(user)
 
-	// token, err := GenerateToken(user)
+	token, err := GenerateToken(user)
 
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// fmt.Println(token)
-	// w.Write([]byte("Successfully called login"))
+	w.WriteHeader(http.StatusOK)
+	jwt.Token = token
+
+	responseJSON(w, jwt)
 }
 
 func protectedEndpoint(w http.ResponseWriter, r *http.Request) {
