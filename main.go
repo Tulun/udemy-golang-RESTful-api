@@ -137,8 +137,22 @@ func GenerateToken(user User) (string, error) {
 func login(w http.ResponseWriter, r *http.Request) {
 
 	var user User
+	// var jwt JWT
+	var error Error
 
 	json.NewDecoder(r.Body).Decode(&user)
+
+	if user.Email == "" {
+		error.Message = "Email is missing"
+		respondWithError(w, http.StatusBadRequest, error)
+		return
+	}
+
+	if user.Password == "" {
+		error.Message = "Password is missing"
+		respondWithError(w, http.StatusBadRequest, error)
+		return
+	}
 
 	token, err := GenerateToken(user)
 
