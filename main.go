@@ -154,13 +154,30 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := GenerateToken(user)
+	// password := user.Password
+
+	row := db.QueryRow("select * from users where email=$1", user.Email)
+	err := row.Scan(&user.ID, &user.Email, &user.Password)
 
 	if err != nil {
-		log.Fatal(err)
+		if err == sql.ErrNoRows {
+			error.Message = "The user does not exist!"
+			respondWithError(w, http.StatusBadRequest, error)
+			return
+		} else {
+			log.Fatal(err)
+		}
 	}
 
-	fmt.Println(token)
+	spew.Dump(user)
+
+	// token, err := GenerateToken(user)
+
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// fmt.Println(token)
 	// w.Write([]byte("Successfully called login"))
 }
 
